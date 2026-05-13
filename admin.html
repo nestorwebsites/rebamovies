@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin — MovieBox Manager</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23e50914'><path d='M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z'/></svg>" />
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #0f0f0f;
+            color: #f5f5f5;
+            min-height: 100vh;
+        }
+
+        /* Login */
+        .login-screen {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            background: #0f0f0f;
+        }
+
+        .login-box {
+            background: #1a1a2a;
+            border-radius: 16px;
+            padding: 40px 36px;
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid #2a2a3a;
+            text-align: center;
+        }
+
+        .login-box h1 {
+            font-size: 28px;
+            margin-bottom: 6px;
+            background: linear-gradient(90deg, #e50914, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .login-box p {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 28px;
+        }
+
+        .login-box input {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            background: #0f0f1a;
+            color: #f5f5f5;
+            font-size: 16px;
+            outline: none;
+            margin-bottom: 16px;
+            transition: border 0.2s;
+        }
+
+        .login-box input:focus {
+            border-color: #e50914;
+        }
+
+        .login-box button {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            background: #e50914;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .login-box button:hover {
+            background: #ff0a1f;
+        }
+
+        .login-error {
+            color: #e50914;
+            font-size: 13px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        /* Admin Panel */
+        .admin-panel {
+            display: none;
+        }
+
+        .admin-panel.active {
+            display: block;
+        }
+
+        .admin-header {
+            background: linear-gradient(135deg, #141414 0%, #1a1a2e 100%);
+            padding: 20px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            border-bottom: 1px solid #2a2a3a;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .admin-header h1 {
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .admin-header h1 span {
+            color: #e50914;
+        }
+
+        .admin-header .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 13px;
+            color: #888;
+        }
+
+        .admin-header .user-info .logout-btn {
+            padding: 6px 16px;
+            border-radius: 6px;
+            border: 1px solid #444;
+            background: transparent;
+            color: #aaa;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .admin-header .user-info .logout-btn:hover {
+            border-color: #e50914;
+            color: #e50914;
+        }
+
+        /* Admin layout */
+        .admin-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            padding: 24px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 900px) {
+            .admin-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Card */
+        .admin-card {
+            background: #1a1a2a;
+            border-radius: 12px;
+            border: 1px solid #252535;
+            padding: 24px;
+        }
+
+        .admin-card h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #252535;
+        }
+
+        /* Form */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            color: #aaa;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            background: #0f0f1a;
+            color: #f5f5f5;
+            font-size: 14px;
+            outline: none;
+            transition: border 0.2s;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            border-color: #e50914;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-group input[type="url"] {
+            font-family: monospace;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        @media (max-width: 500px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .btn {
+            padding: 10px 24px;
+            border-radius: 8px;
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #e50914;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #ff0a1f;
+            transform: scale(1.02);
+        }
+
+        .btn-danger {
+            background: #6b2020;
+            color: #ff6b6b;
+        }
+
+        .btn-danger:hover {
+            background: #8a2a2a;
+        }
+
+        .btn-sm {
+            padding: 6px 14px;
+            font-size: 12px;
+        }
+
+        .form-success {
+            display: none;
+            color: #4caf50;
+            font-size: 13px;
+            margin-top: 10px;
+            padding: 8px 12px;
+            background: #1a2a1a;
+            border-radius: 6px;
+        }
+
+        .form-success.show {
+            display: block;
+        }
+
+        /* Table */
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        table th {
+            text-align: left;
+            padding: 10px 12px;
+            color: #888;
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #252535;
+        }
+
+        table td {
+            padding: 12px;
+            border-bottom: 1px solid #1f1f2a;
+            vertical-align: middle;
+        }
+
+        table tr:hover td {
+            background: #1f1f2a;
+        }
+
+        .table-img {
+            width: 40px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 4px;
+            background: #252535;
+            display: block;
+        }
+
+        .table-title {
+            font-weight: 500;
+        }
+
+        .table-year {
+            color: #888;
+            font-size: 12px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        /* Stats bar */
+        .stats-bar {
+            display: flex;
+            gap: 16px;
+            padding: 16px 24px;
+            background: #141414;
+            border-bottom: 1px solid #1f1f2a;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #888;
+        }
+
+        .stat-item strong {
+            color: #f5f5f5;
+            font-size: 18px;
+        }
+
+        .stat-item .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .dot-red { background: #e50914; }
+        .dot-blue { background: #2d7d9a; }
+
+        /* Tabs */
+        .tab-bar {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 20px;
+            background: #0f0f1a;
+            border-radius: 8px;
+            padding: 4px;
+        }
+
+        .tab-bar button {
+            flex: 1;
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: none;
+            background: transparent;
+            color: #888;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-bar button.active {
+            background: #e50914;
+            color: white;
+        }
+
+        .tab-bar button:hover:not(.active) {
+            color: #f5f5f5;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0f0f0f; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+<!-- Login Screen -->
+<div class="login-screen" id="loginScreen">
+    <div class="login-box">
+        <h1>MovieBox</h1>
+        <p>Admin Panel — Sign in to manage movies</p>
+        <input type="password" id="passwordInput" placeholder="Enter admin password" autocomplete="off" />
+        <button id="loginBtn">Sign In</button>
+        <div class="login-error" id="loginError">Incorrect password. Try again.</div>
+    </div>
+</div>
+
+<!-- Admin Panel -->
+<div class="admin-panel" id="adminPanel">
+    <div class="admin-header">
+        <h1>Movie<span>Box</span> Admin</h1>
+        <div class="user-info">
+            <span>🔒 Admin</span>
+            <button class="logout-btn" id="logoutBtn">Logout</button>
+        </div>
+    </div>
+
+    <div class="stats-bar" id="statsBar">
+        <div class="stat-item">
+            <span class="dot dot-red"></span>
+            Custom Movies: <strong id="statCustom">0</strong>
+        </div>
+        <div class="stat-item">
+            <span class="dot dot-blue"></span>
+            API Movies: <strong id="statApi">0</strong>
+        </div>
+        <div class="stat-item">
+            Total: <strong id="statTotal">0</strong>
+        </div>
+    </div>
+
+    <div class="admin-layout">
+        <!-- Left: Add/Edit Form -->
+        <div class="admin-card">
+            <h2 id="formTitle">➕ Add New Movie</h2>
+
+            <form id="movieForm" autocomplete="off">
+                <input type="hidden" id="editId" value="" />
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="movieTitle">Title *</label>
+                        <input type="text" id="movieTitle" placeholder="e.g. Inception" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="movieYear">Year *</label>
+                        <input type="number" id="movieYear" placeholder="e.g. 2010" min="1888" max="2099" required />
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="movieGenre">Genre</label>
+                        <input type="text" id="movieGenre" placeholder="e.g. Action, Sci-Fi, Thriller" />
+                    </div>
+                    <div class="form-group">
+                        <label for="movieRating">IMDb Rating</label>
+                        <input type="number" id="movieRating" placeholder="e.g. 8.8" min="0" max="10" step="0.1" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="movieCountry">Country</label>
+                    <input type="text" id="movieCountry" placeholder="e.g. United States" />
+                </div>
+
+                <div class="form-group">
+                    <label for="moviePoster">Poster Image URL *</label>
+                    <input type="url" id="moviePoster" placeholder="https://example.com/poster.jpg" required />
+                </div>
+
+                <div class="form-group">
+                    <label for="movieDescription">Description</label>
+                    <textarea id="movieDescription" placeholder="Brief description of the movie..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="movieType">Type</label>
+                    <select id="movieType">
+                        <option value="1">Movie</option>
+                        <option value="2">TV Series</option>
+                    </select>
+                </div>
+
+                <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px;">
+                    <button type="submit" class="btn btn-primary" id="submitBtn">➕ Add Movie</button>
+                    <button type="button" class="btn btn-danger btn-sm" id="cancelEditBtn" style="display:none;">✕ Cancel Edit</button>
+                </div>
+
+                <div class="form-success" id="formSuccess">Movie saved successfully!</div>
+            </form>
+        </div>
+
+        <!-- Right: Movie List -->
+        <div class="admin-card">
+            <h2>📦 Custom Movies</h2>
+
+            <div class="tab-bar">
+                <button class="active" data-tab="custom">Custom</button>
+                <button data-tab="api">From API</button>
+            </div>
+
+            <div class="tab-content active" id="tabCustom">
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Poster</th>
+                                <th>Title</th>
+                                <th>Year</th>
+                                <th>Rating</th>
+                                <th style="width:100px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="customTableBody">
+                        </tbody>
+                    </table>
+                </div>
+                <div class="empty-state" id="customEmpty">No custom movies yet. Add one on the left!</div>
+            </div>
+
+            <div class="tab-content" id="tabApi">
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Poster</th>
+                                <th>Title</th>
+                                <th>Year</th>
+                                <th>Rating</th>
+                                <th style="width:70px;">Type</th>
+                            </tr>
+                        </thead>
+                        <tbody id="apiTableBody">
+                        </tbody>
+                    </table>
+                </div>
+                <div class="empty-state" id="apiEmpty">Loading API movies...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ============================================================
+    // CONFIG
+    // ============================================================
+    const ADMIN_PASSWORD = 'mucyoprince@123';
+    const API_BASE = 'https://ab-movieapi.abrahamdw882.workers.dev';
+    const STORAGE_KEY = 'moviebox_custom_movies';
+
+    // ============================================================
+    // STATE
+    // ============================================================
+    let customMovies = [];
+    let apiMovies = [];
+
+    // ============================================================
+    // AUTH
+    // ============================================================
+    const loginScreen = document.getElementById('loginScreen');
+    const adminPanel = document.getElementById('adminPanel');
+    const passwordInput = document.getElementById('passwordInput');
+    const loginBtn = document.getElementById('loginBtn');
+    const loginError = document.getElementById('loginError');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    function checkAuth() {
+        const authed = sessionStorage.getItem('moviebox_admin') === '1';
+        if (authed) {
+            loginScreen.style.display = 'none';
+            adminPanel.classList.add('active');
+            init();
+        } else {
+            loginScreen.style.display = 'flex';
+            adminPanel.classList.remove('active');
+        }
+    }
+
+    loginBtn.addEventListener('click', () => {
+        if (passwordInput.value === ADMIN_PASSWORD) {
+            sessionStorage.setItem('moviebox_admin', '1');
+            loginError.style.display = 'none';
+            passwordInput.value = '';
+            checkAuth();
+        } else {
+            loginError.style.display = 'block';
+            passwordInput.value = '';
+            passwordInput.focus();
+        }
+    });
+
+    passwordInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') loginBtn.click();
+    });
+
+    logoutBtn.addEventListener('click', () => {
+        sessionStorage.removeItem('moviebox_admin');
+        checkAuth();
+    });
+
+    // ============================================================
+    // DATA
+    // ============================================================
+    function loadCustomMovies() {
+        try {
+            const data = localStorage.getItem(STORAGE_KEY);
+            customMovies = data ? JSON.parse(data) : [];
+        } catch (e) {
+            customMovies = [];
+        }
+    }
+
+    function saveCustomMovies() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(customMovies));
+    }
+
+    async function loadApiMovies() {
+        try {
+            const res = await fetch(`${API_BASE}/api/trending?page=0&perPage=20`);
+            const json = await res.json();
+            apiMovies = json.data?.subjectList || [];
+        } catch (e) {
+            apiMovies = [];
+        }
+    }
+
+    // ============================================================
+    // RENDER
+    // ============================================================
+    function renderCustomTable() {
+        const tbody = document.getElementById('customTableBody');
+        const empty = document.getElementById('customEmpty');
+
+        if (customMovies.length === 0) {
+            tbody.innerHTML = '';
+            empty.style.display = 'block';
+            return;
+        }
+
+        empty.style.display = 'none';
+        tbody.innerHTML = customMovies.map((m, i) => `
+            <tr>
+                <td>
+                    <img class="table-img"
+                         src="${m.poster || ''}"
+                         alt="${m.title}"
+                         onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 2 3%22><rect fill=%22%23252535%22 width=%222%22 height=%223%22/></svg>'"
+                    />
+                </td>
+                <td>
+                    <div class="table-title">${m.title}</div>
+                    ${m.genre ? `<div style="font-size:11px;color:#777;">${m.genre}</div>` : ''}
+                </td>
+                <td class="table-year">${m.year || '-'}</td>
+                <td>${m.rating ? `★ ${m.rating}` : '-'}</td>
+                <td>
+                    <button class="btn btn-primary btn-sm" onclick="editMovie(${i})" style="margin-right:4px;">✏️</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteMovie(${i})">🗑️</button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function renderApiTable() {
+        const tbody = document.getElementById('apiTableBody');
+        const empty = document.getElementById('apiEmpty');
+
+        if (apiMovies.length === 0) {
+            tbody.innerHTML = '';
+            empty.textContent = 'No API movies loaded.';
+            empty.style.display = 'block';
+            return;
+        }
+
+        empty.style.display = 'none';
+        tbody.innerHTML = apiMovies.map(m => {
+            const isMovie = m.subjectType === 1;
+            return `
+                <tr>
+                    <td>
+                        <img class="table-img"
+                             src="${m.cover?.url || ''}"
+                             alt="${m.title}"
+                             onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 2 3%22><rect fill=%22%23252535%22 width=%222%22 height=%223%22/></svg>'"
+                        />
+                    </td>
+                    <td>
+                        <div class="table-title">${m.title}</div>
+                        ${m.genre ? `<div style="font-size:11px;color:#777;">${m.genre}</div>` : ''}
+                    </td>
+                    <td class="table-year">${m.releaseDate ? m.releaseDate.slice(0,4) : '-'}</td>
+                    <td>${m.imdbRatingValue ? `★ ${m.imdbRatingValue}` : '-'}</td>
+                    <td>
+                        <span style="font-size:11px;padding:2px 8px;border-radius:4px;background:${isMovie ? '#e50914' : '#2d7d9a'};color:white;">
+                            ${isMovie ? 'Movie' : 'TV'}
+                        </span>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    function updateStats() {
+        document.getElementById('statCustom').textContent = customMovies.length;
+        document.getElementById('statApi').textContent = apiMovies.length;
+        document.getElementById('statTotal').textContent = customMovies.length + apiMovies.length;
+    }
+
+    function renderAll() {
+        renderCustomTable();
+        renderApiTable();
+        updateStats();
+    }
+
+    // ============================================================
+    // CRUD
+    // ============================================================
+    function getFormData() {
+        return {
+            id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+            title: document.getElementById('movieTitle').value.trim(),
+            year: document.getElementById('movieYear').value.trim(),
+            genre: document.getElementById('movieGenre').value.trim(),
+            rating: document.getElementById('movieRating').value.trim(),
+            country: document.getElementById('movieCountry').value.trim(),
+            poster: document.getElementById('moviePoster').value.trim(),
+            description: document.getElementById('movieDescription').value.trim(),
+            type: parseInt(document.getElementById('movieType').value),
+            createdAt: new Date().toISOString()
+        };
+    }
+
+    function setFormData(movie) {
+        document.getElementById('movieTitle').value = movie.title || '';
+        document.getElementById('movieYear').value = movie.year || '';
+        document.getElementById('movieGenre').value = movie.genre || '';
+        document.getElementById('movieRating').value = movie.rating || '';
+        document.getElementById('movieCountry').value = movie.country || '';
+        document.getElementById('moviePoster').value = movie.poster || '';
+        document.getElementById('movieDescription').value = movie.description || '';
+        document.getElementById('movieType').value = movie.type || 1;
+    }
+
+    function resetForm() {
+        document.getElementById('movieForm').reset();
+        document.getElementById('editId').value = '';
+        document.getElementById('formTitle').textContent = '➕ Add New Movie';
+        document.getElementById('submitBtn').textContent = '➕ Add Movie';
+        document.getElementById('cancelEditBtn').style.display = 'none';
+        document.getElementById('formSuccess').classList.remove('show');
+    }
+
+    document.getElementById('movieForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const editId = document.getElementById('editId').value;
+        const data = getFormData();
+
+        if (!data.title || !data.year || !data.poster) {
+            alert('Title, Year, and Poster URL are required.');
+            return;
+        }
+
+        if (editId) {
+            // Edit existing
+            const idx = customMovies.findIndex(m => m.editId === editId || m._idx === editId);
+            if (idx !== -1) {
+                data.editId = customMovies[idx].editId || editId;
+                data.createdAt = customMovies[idx].createdAt;
+                customMovies[idx] = data;
+            }
+        } else {
+            // Add new
+            data.editId = data.id;
+            customMovies.unshift(data);
+        }
+
+        saveCustomMovies();
+        renderAll();
+        resetForm();
+
+        const success = document.getElementById('formSuccess');
+        success.textContent = editId ? '✅ Movie updated successfully!' : '✅ Movie added successfully!';
+        success.classList.add('show');
+        setTimeout(() => success.classList.remove('show'), 3000);
+    });
+
+    document.getElementById('cancelEditBtn').addEventListener('click', resetForm);
+
+    function editMovie(index) {
+        const movie = customMovies[index];
+        if (!movie) return;
+
+        setFormData(movie);
+        document.getElementById('editId').value = movie.editId || index;
+        document.getElementById('formTitle').textContent = '✏️ Edit Movie';
+        document.getElementById('submitBtn').textContent = '💾 Save Changes';
+        document.getElementById('cancelEditBtn').style.display = 'inline-block';
+        document.getElementById('formSuccess').classList.remove('show');
+
+        // Scroll to form
+        document.querySelector('.admin-card').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function deleteMovie(index) {
+        if (!confirm(`Delete "${customMovies[index]?.title}"?`)) return;
+        customMovies.splice(index, 1);
+        saveCustomMovies();
+        renderAll();
+        // If we were editing this movie, reset
+        if (document.getElementById('editId').value) {
+            const stillExists = customMovies.some(m => m.editId === document.getElementById('editId').value);
+            if (!stillExists) resetForm();
+        }
+    }
+
+    // Expose functions globally
+    window.editMovie = editMovie;
+    window.deleteMovie = deleteMovie;
+
+    // ============================================================
+    // TABS
+    // ============================================================
+    document.querySelectorAll('.tab-bar button').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tab-bar button').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('tab' + btn.dataset.tab.charAt(0).toUpperCase() + btn.dataset.tab.slice(1)).classList.add('active');
+        });
+    });
+
+    // ============================================================
+    // INIT
+    // ============================================================
+    async function init() {
+        loadCustomMovies();
+        await loadApiMovies();
+        renderAll();
+    }
+
+    // Start
+    checkAuth();
+</script>
+</body>
+</html>
