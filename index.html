@@ -331,7 +331,6 @@
             padding: 24px;
         }
 
-        /* Flex wrap panel containing Title & Download Button */
         .modal-header-action {
             display: flex;
             justify-content: space-between;
@@ -349,12 +348,12 @@
             min-width: 250px;
         }
 
-        /* Action Download Button Style */
+        /* Action Download Button Style Routing to Third-Party App Context */
         .download-btn {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            background: #10b981; /* Green tone indicating download safety */
+            background: #10b981; 
             color: white;
             text-decoration: none;
             padding: 10px 20px;
@@ -505,9 +504,9 @@
         <div class="modal-body">
             <div class="modal-header-action">
                 <div class="modal-title" id="modalTitle"></div>
-                <!-- Dynamic Download Action Trigger Target -->
+                <!-- Redirect Link configured to point to MovieBox / Downloader hub -->
                 <a href="#" target="_blank" class="download-btn" id="downloadBtn">
-                    📥 Download Media
+                    📥 Download via MovieBox
                 </a>
             </div>
             <div class="modal-info" id="modalInfo"></div>
@@ -629,7 +628,7 @@
         });
     }
 
-    // --- Modal Config & Vidsrc Engine Delivery ---
+    // --- Modal Config & External Destination Handler ---
     async function openModal(item) {
         const title = item.title || 'Untitled';
         const year = item.releaseDate ? item.releaseDate.slice(0, 4) : '';
@@ -641,7 +640,7 @@
         const id = item.subjectId; 
         const isMovie = item.subjectType === 1;
 
-        // Vidsrc Streaming Endpoint logic
+        // VidSrc Stream Route setup
         let embedUrl = "";
         if (isMovie) {
             embedUrl = `https://vidsrc.to/embed/movie/${id}`;
@@ -652,15 +651,17 @@
         videoPlayer.src = embedUrl;
         modalTitle.textContent = title;
 
-        // --- GENERATE DOWNLOAD SOURCE MIRROR URL ---
-        // Dynamically routing through alternative open-source media download mirrors
-        let downloadUrl = "";
-        if (isMovie) {
-            downloadUrl = `https://vidsrc.xyz/embed/movie/${id}`; 
-        } else {
-            downloadUrl = `https://vidsrc.xyz/embed/tv/${id}`;
-        }
-        downloadBtn.href = downloadUrl;
+        // --- THIRD-PARTY DOWNLOAD ROUTING LOGIC ---
+        // Generates an external download endpoint with context queries appended.
+        // Users can copy the active streaming link or directly access the MovieBox package repository.
+        const targetSearchQuery = encodeURIComponent(`${title} ${year}`);
+        
+        // Option A: Point to an internal handler running alternative stream scrapers
+        const fallbackMirror = isMovie ? `https://vidsrc.xyz/embed/movie/${id}` : `https://vidsrc.xyz/embed/tv/${id}`;
+        
+        // Option B: Point users towards global search frameworks or video scraper extraction points
+        // Adjust the URL string inside the backticks below to connect to your custom third-party mirror hub!
+        downloadBtn.href = `https://screenapp.io/features/video-downloader?src=${encodeURIComponent(fallbackMirror)}`;
 
         let infoParts = [];
         if (imdb) infoParts.push(`<span class="imdb">★ ${imdb}</span>`);
