@@ -255,12 +255,12 @@
             to { transform: rotate(360deg); }
         }
 
-        /* Modal Layout Changes for Video Player Integration */
+        /* Modal Box Design */
         .modal-overlay {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.9);
+            background: rgba(0, 0, 0, 0.95);
             z-index: 200;
             align-items: center;
             justify-content: center;
@@ -275,7 +275,7 @@
         .modal {
             background: #11111e;
             border-radius: 16px;
-            max-width: 800px; /* Widened to fit landscape video player elegantly */
+            max-width: 850px;
             width: 100%;
             max-height: 95vh;
             overflow-y: auto;
@@ -291,25 +291,25 @@
 
         .modal-close {
             position: absolute;
-            top: 10px;
+            top: 12px;
             right: 15px;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.6);
             border: none;
-            color: #aaa;
+            color: #ccc;
             font-size: 28px;
             cursor: pointer;
-            padding: 4px 12px;
+            padding: 2px 12px;
             border-radius: 50%;
             z-index: 10;
-            transition: color 0.15s, background 0.15s;
+            transition: all 0.2s;
         }
 
         .modal-close:hover {
             color: white;
-            background: rgba(229, 9, 20, 0.8);
+            background: #e50914;
         }
 
-        /* Responsive Iframe Container Wrapper */
+        /* Fluid Video Player Canvas Wrapper */
         .player-container {
             width: 100%;
             background: #000;
@@ -372,7 +372,7 @@
             text-decoration: none;
         }
 
-        /* Scrollbar */
+        /* Scrollbar styling */
         ::-webkit-scrollbar {
             width: 8px;
         }
@@ -384,7 +384,7 @@
             border-radius: 4px;
         }
 
-        /* Responsive elements */
+        /* Responsive Breakpoints */
         @media (max-width: 600px) {
             header {
                 padding: 14px 16px;
@@ -453,7 +453,7 @@
     <div class="modal">
         <button class="modal-close" id="modalClose">&times;</button>
         
-        <!-- Replaced image preview with responsive video player frame -->
+        <!-- Video Canvas Window -->
         <div class="player-container">
             <iframe id="videoPlayer" src="" allowfullscreen allow="autoplay; encrypted-media"></iframe>
         </div>
@@ -485,7 +485,7 @@
     let currentFilter = 'trending';
     let currentData = [];
 
-    // --- Fetch ---
+    // --- Fetch Operations ---
     async function fetchData(filter, query = '') {
         loading.style.display = 'block';
         grid.innerHTML = '';
@@ -527,7 +527,7 @@
         }
     }
 
-    // --- Render Grid ---
+    // --- Dom Layout Render ---
     function renderGrid(items) {
         if (!items || items.length === 0) {
             grid.innerHTML = `<div style="text-align:center;padding:60px 20px;color:#888;">
@@ -568,7 +568,7 @@
             `;
         }).join('');
 
-        // Add click listeners
+        // Card Action Triggers
         document.querySelectorAll('.card').forEach(card => {
             card.addEventListener('click', () => {
                 const id = card.dataset.id;
@@ -578,7 +578,7 @@
         });
     }
 
-    // --- Modal Configuration with Direct Player Generation ---
+    // --- Modal Config & Vidsrc Engine Delivery ---
     async function openModal(item) {
         const title = item.title || 'Untitled';
         const year = item.releaseDate ? item.releaseDate.slice(0, 4) : '';
@@ -587,21 +587,17 @@
         const country = item.countryName || '';
         const desc = item.description || 'No description available.';
         
-        // Extraction parameters for internal streaming using public embeds.
         const id = item.subjectId; 
         const isMovie = item.subjectType === 1;
 
-        // --- EMBED PLAYER ROUTING CONFIGURATION ---
-        // We switch source engines depending on content rules.
-        // Superembed supports direct TMDB ID passes if available, otherwise fallback methods apply.
+        // Vidsrc Endpoint Generator logic
         let embedUrl = "";
         if (isMovie) {
-            embedUrl = `https://multiembed.to/getvideo.php?id=${id}&type=movie`;
+            embedUrl = `https://vidsrc.to/embed/movie/${id}`;
         } else {
-            embedUrl = `https://multiembed.to/getvideo.php?id=${id}&type=tv`;
+            embedUrl = `https://vidsrc.to/embed/tv/${id}`;
         }
         
-        // Feed video url to iframe DOM element
         videoPlayer.src = embedUrl;
         modalTitle.textContent = title;
 
@@ -624,7 +620,7 @@
     function closeModal() {
         modalOverlay.classList.remove('open');
         document.body.style.overflow = '';
-        videoPlayer.src = ''; // Stops the video/audio immediately when closing the window
+        videoPlayer.src = ''; // Stops playback streams entirely from execution stack
     }
 
     modalClose.addEventListener('click', closeModal);
@@ -635,7 +631,7 @@
         if (e.key === 'Escape') closeModal();
     });
 
-    // --- Filters ---
+    // --- Filter Triggers ---
     filterBtns.forEach(btn => {
         btn.addEventListener('click', () => {
             filterBtns.forEach(b => b.classList.remove('active'));
@@ -646,7 +642,7 @@
         });
     });
 
-    // --- Search ---
+    // --- Search Queries ---
     function doSearch() {
         const query = searchInput.value.trim();
         if (!query) {
@@ -662,7 +658,7 @@
         if (e.key === 'Enter') doSearch();
     });
 
-    // --- Init ---
+    // --- Initialization ---
     fetchData('trending');
 </script>
 </body>
