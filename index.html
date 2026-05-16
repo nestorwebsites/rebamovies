@@ -255,17 +255,17 @@
             to { transform: rotate(360deg); }
         }
 
-        /* Modal */
+        /* Modal Layout Changes for Video Player Integration */
         .modal-overlay {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.85);
+            background: rgba(0, 0, 0, 0.9);
             z-index: 200;
             align-items: center;
             justify-content: center;
             padding: 20px;
-            backdrop-filter: blur(4px);
+            backdrop-filter: blur(8px);
         }
 
         .modal-overlay.open {
@@ -273,14 +273,15 @@
         }
 
         .modal {
-            background: #1a1a2a;
+            background: #11111e;
             border-radius: 16px;
-            max-width: 600px;
+            max-width: 800px; /* Widened to fit landscape video player elegantly */
             width: 100%;
-            max-height: 90vh;
+            max-height: 95vh;
             overflow-y: auto;
-            border: 1px solid #333;
+            border: 1px solid #2a2a3a;
             animation: modalIn 0.25s ease;
+            position: relative;
         }
 
         @keyframes modalIn {
@@ -289,38 +290,52 @@
         }
 
         .modal-close {
-            position: sticky;
-            top: 0;
-            float: right;
-            background: none;
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: rgba(0, 0, 0, 0.5);
             border: none;
             color: #aaa;
             font-size: 28px;
             cursor: pointer;
-            padding: 12px 16px;
-            z-index: 1;
-            transition: color 0.15s;
+            padding: 4px 12px;
+            border-radius: 50%;
+            z-index: 10;
+            transition: color 0.15s, background 0.15s;
         }
 
         .modal-close:hover {
             color: white;
+            background: rgba(229, 9, 20, 0.8);
         }
 
-        .modal-img {
+        /* Responsive Iframe Container Wrapper */
+        .player-container {
             width: 100%;
-            max-height: 400px;
-            object-fit: cover;
-            display: block;
+            background: #000;
+            aspect-ratio: 16 / 9;
+            position: relative;
+            border-bottom: 2px solid #2a2a3a;
+        }
+
+        .player-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
         }
 
         .modal-body {
-            padding: 20px 24px 28px;
+            padding: 24px;
         }
 
         .modal-title {
-            font-size: 24px;
+            font-size: 26px;
             font-weight: 700;
             margin-bottom: 8px;
+            color: #fff;
         }
 
         .modal-info {
@@ -329,7 +344,7 @@
             gap: 12px;
             font-size: 14px;
             color: #aaa;
-            margin-bottom: 14px;
+            margin-bottom: 16px;
         }
 
         .modal-info .imdb {
@@ -340,26 +355,7 @@
         .modal-desc {
             font-size: 14px;
             line-height: 1.6;
-            color: #bbb;
-            margin-bottom: 18px;
-        }
-
-        .modal-btn {
-            display: inline-block;
-            padding: 10px 24px;
-            border-radius: 8px;
-            border: none;
-            background: #e50914;
-            color: white;
-            font-weight: 600;
-            font-size: 14px;
-            cursor: pointer;
-            text-decoration: none;
-            transition: background 0.2s;
-        }
-
-        .modal-btn:hover {
-            background: #ff0a1f;
+            color: #ccc;
         }
 
         /* Footer */
@@ -388,7 +384,7 @@
             border-radius: 4px;
         }
 
-        /* Responsive */
+        /* Responsive elements */
         @media (max-width: 600px) {
             header {
                 padding: 14px 16px;
@@ -407,7 +403,7 @@
                 padding: 12px 16px;
             }
             .modal-body {
-                padding: 16px 18px 22px;
+                padding: 16px;
             }
             .search-box input {
                 font-size: 13px;
@@ -456,19 +452,22 @@
 <div class="modal-overlay" id="modalOverlay">
     <div class="modal">
         <button class="modal-close" id="modalClose">&times;</button>
-        <img class="modal-img" id="modalImg" src="" alt="" />
+        
+        <!-- Replaced image preview with responsive video player frame -->
+        <div class="player-container">
+            <iframe id="videoPlayer" src="" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+        </div>
+
         <div class="modal-body">
             <div class="modal-title" id="modalTitle"></div>
             <div class="modal-info" id="modalInfo"></div>
             <div class="modal-desc" id="modalDesc"></div>
-            <a class="modal-btn" id="modalBtn" href="#" target="_blank">View Details</a>
         </div>
     </div>
 </div>
 
 <script>
     const API_BASE = 'https://ab-movieapi.abrahamdw882.workers.dev';
-    const PLATFORM_BASE = 'https://h5.aoneroom.com';
 
     const grid = document.getElementById('grid');
     const loading = document.getElementById('loading');
@@ -478,11 +477,10 @@
 
     const modalOverlay = document.getElementById('modalOverlay');
     const modalClose = document.getElementById('modalClose');
-    const modalImg = document.getElementById('modalImg');
+    const videoPlayer = document.getElementById('videoPlayer');
     const modalTitle = document.getElementById('modalTitle');
     const modalInfo = document.getElementById('modalInfo');
     const modalDesc = document.getElementById('modalDesc');
-    const modalBtn = document.getElementById('modalBtn');
 
     let currentFilter = 'trending';
     let currentData = [];
@@ -580,34 +578,44 @@
         });
     }
 
-    // --- Modal ---
+    // --- Modal Configuration with Direct Player Generation ---
     async function openModal(item) {
-        const coverUrl = item.cover?.url || '';
         const title = item.title || 'Untitled';
         const year = item.releaseDate ? item.releaseDate.slice(0, 4) : '';
         const imdb = item.imdbRatingValue || '';
         const genre = item.genre || '';
         const country = item.countryName || '';
         const desc = item.description || 'No description available.';
-        const detailPath = item.detailPath || '';
-        const detailUrl = detailPath ? `${PLATFORM_BASE}/detail/${detailPath}` : '#';
+        
+        // Extraction parameters for internal streaming using public embeds.
+        const id = item.subjectId; 
+        const isMovie = item.subjectType === 1;
 
-        modalImg.src = coverUrl;
-        modalImg.alt = title;
+        // --- EMBED PLAYER ROUTING CONFIGURATION ---
+        // We switch source engines depending on content rules.
+        // Superembed supports direct TMDB ID passes if available, otherwise fallback methods apply.
+        let embedUrl = "";
+        if (isMovie) {
+            embedUrl = `https://multiembed.to/getvideo.php?id=${id}&type=movie`;
+        } else {
+            embedUrl = `https://multiembed.to/getvideo.php?id=${id}&type=tv`;
+        }
+        
+        // Feed video url to iframe DOM element
+        videoPlayer.src = embedUrl;
         modalTitle.textContent = title;
 
         let infoParts = [];
         if (imdb) infoParts.push(`<span class="imdb">★ ${imdb}</span>`);
-        if (year) infoParts.push(`<span>${year}</span>`);
-        if (country) infoParts.push(`<span>${country}</span>`);
-        if (genre) infoParts.push(`<span>${genre}</span>`);
-        infoParts.push(item.subjectType === 1
+        if (year) infoParts.push("<span>" + year + "</span>");
+        if (country) infoParts.push("<span>" + country + "</span>");
+        if (genre) infoParts.push("<span>" + genre + "</span>");
+        infoParts.push(isMovie
             ? '<span class="badge badge-movie">Movie</span>'
             : '<span class="badge badge-tv">TV Series</span>');
         modalInfo.innerHTML = infoParts.join(' &middot; ');
 
         modalDesc.textContent = desc;
-        modalBtn.href = detailUrl;
 
         modalOverlay.classList.add('open');
         document.body.style.overflow = 'hidden';
@@ -616,6 +624,7 @@
     function closeModal() {
         modalOverlay.classList.remove('open');
         document.body.style.overflow = '';
+        videoPlayer.src = ''; // Stops the video/audio immediately when closing the window
     }
 
     modalClose.addEventListener('click', closeModal);
