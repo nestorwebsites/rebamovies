@@ -331,11 +331,47 @@
             padding: 24px;
         }
 
+        /* Flex wrap panel containing Title & Download Button */
+        .modal-header-action {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+
         .modal-title {
             font-size: 26px;
             font-weight: 700;
-            margin-bottom: 8px;
             color: #fff;
+            flex: 1;
+            min-width: 250px;
+        }
+
+        /* Action Download Button Style */
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #10b981; /* Green tone indicating download safety */
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.2s, transform 0.1s;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        }
+
+        .download-btn:hover {
+            background: #059669;
+            transform: translateY(-2px);
+        }
+
+        .download-btn:active {
+            transform: translateY(0);
         }
 
         .modal-info {
@@ -405,6 +441,14 @@
             .modal-body {
                 padding: 16px;
             }
+            .modal-header-action {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .download-btn {
+                justify-content: center;
+                text-align: center;
+            }
             .search-box input {
                 font-size: 13px;
                 padding: 8px 12px;
@@ -459,7 +503,13 @@
         </div>
 
         <div class="modal-body">
-            <div class="modal-title" id="modalTitle"></div>
+            <div class="modal-header-action">
+                <div class="modal-title" id="modalTitle"></div>
+                <!-- Dynamic Download Action Trigger Target -->
+                <a href="#" target="_blank" class="download-btn" id="downloadBtn">
+                    📥 Download Media
+                </a>
+            </div>
             <div class="modal-info" id="modalInfo"></div>
             <div class="modal-desc" id="modalDesc"></div>
         </div>
@@ -479,6 +529,7 @@
     const modalClose = document.getElementById('modalClose');
     const videoPlayer = document.getElementById('videoPlayer');
     const modalTitle = document.getElementById('modalTitle');
+    const downloadBtn = document.getElementById('downloadBtn');
     const modalInfo = document.getElementById('modalInfo');
     const modalDesc = document.getElementById('modalDesc');
 
@@ -590,7 +641,7 @@
         const id = item.subjectId; 
         const isMovie = item.subjectType === 1;
 
-        // Vidsrc Endpoint Generator logic
+        // Vidsrc Streaming Endpoint logic
         let embedUrl = "";
         if (isMovie) {
             embedUrl = `https://vidsrc.to/embed/movie/${id}`;
@@ -600,6 +651,16 @@
         
         videoPlayer.src = embedUrl;
         modalTitle.textContent = title;
+
+        // --- GENERATE DOWNLOAD SOURCE MIRROR URL ---
+        // Dynamically routing through alternative open-source media download mirrors
+        let downloadUrl = "";
+        if (isMovie) {
+            downloadUrl = `https://vidsrc.xyz/embed/movie/${id}`; 
+        } else {
+            downloadUrl = `https://vidsrc.xyz/embed/tv/${id}`;
+        }
+        downloadBtn.href = downloadUrl;
 
         let infoParts = [];
         if (imdb) infoParts.push(`<span class="imdb">★ ${imdb}</span>`);
@@ -620,7 +681,7 @@
     function closeModal() {
         modalOverlay.classList.remove('open');
         document.body.style.overflow = '';
-        videoPlayer.src = ''; // Stops playback streams entirely from execution stack
+        videoPlayer.src = ''; 
     }
 
     modalClose.addEventListener('click', closeModal);
